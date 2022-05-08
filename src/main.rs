@@ -31,7 +31,17 @@ struct Renderable {
 impl GameState for State{
     fn tick(&mut self, ctx: &mut Rltk){
         ctx.cls();
-        ctx.print(1,1,"hello world");
+        //ask read access to container used to store position/render components
+        let positions = self.ecs.read_storage::<Position>();
+        let renderables = self.ecs.read_storage::<Renderable>();
+
+        //specs uses a database like join to find entities that have both position and renderable components
+        //destructuring in rust, on result per entity that has both components
+        //returns a tuple {} of entities with components pos and render .o and .1
+        //entities with one or the other will not be included 
+        for (pos, render) in (&positions, &renderables).join(){
+            ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+        }
     }
 }
 
@@ -58,6 +68,19 @@ fn main() -> rltk::BError {
             bg: RGB::named(rltk::BLACK),
         })
         .build();
+
+    //add random entities
+    for i in 0..10 {
+        gs.ecs
+            .create_entity()
+            .with(Position{x:i*7,y:20})
+            .with(Renderable{
+                glyph: rltk::to_cp437('@'),
+                fg: RGB::named(rltk::RED),
+                bg: RGB::named(rltk::BLACK),
+            })
+            .build();
+    }
 
 rltk::main_loop(context,gs)
 }
