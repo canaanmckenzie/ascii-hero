@@ -4,72 +4,22 @@ use specs::prelude::*;
 use std::cmp::{max,min};
 use specs_derive::Component;
 
+
+
+mod map;
+pub use map::*;
+mod components;
+pub use components::*;
+
 struct State{
     //ecs from spec crate
     ecs: World
 }
 
-//components
-
-//use specs derive macro to simplify component assignment
-#[derive(Component)]
-struct Position {
-    //2d 32 bit integers for x and y position
-    x: i32,
-    y: i32,
-} 
-
-//place character on screen
-#[derive(Component)]
-struct Renderable {
-    //use glyph representation from rltk
-    glyph: rltk::FontCharType,
-    fg: RGB,
-    bg: RGB,
-}
-
-#[derive(Component)]
-struct LeftMover {}
-
-
-#[derive(Component,Debug)]
-struct Player {}
-
-
-
-//map tiles using enumeration - derive features are built into rust
-//clone adds a .clone() method to type copy makes replica does not move object
-#[derive(PartialEq,Copy,Clone)]
-enum TileType {
-    Wall, Floor
-}
-
-
-
-struct LeftWalker{} //empty structure to attach the system logic
-
-//first simple system to combine entity and components into a logical framework
-//implementing specs System trait for leftwalker structure
-// 'a mean that the components it is using must exist as long as system is running
-impl<'a> System <'a> for LeftWalker {
-    //type system data tells specs what the system requires
-    type SystemData = (ReadStorage<'a, LeftMover>, WriteStorage<'a,Position>);
-    //fn run is a trait implementation required by impl system from specs takes itself and systemdata
-    fn run(&mut self, (lefty, mut pos) : Self::SystemData){
-        //system shorthand for rendering, will run for each entity that has both components leftmover and position
-        for (_lefty,pos) in (&lefty, &mut pos).join() {
-            //underscore means component is not used but required to have one, lefty = leftmover component
-            pos.x -= 1;
-            if pos.x <0 {pos.x = 79;}
-        }
-    }
-}
 
 //include system into state component to actually run logic
 impl State {
     fn run_systems(&mut self){
-        let mut lw = LeftWalker{}; //makes mutable instance of leftwalker system
-        lw.run_now(&self.ecs); //tells system to run and how to find the ecs
         self.ecs.maintain(); //tells specs that if any changes were queued by sytem they should apply to world now
     }
 }
@@ -139,67 +89,6 @@ fn player_input(gs: &mut State, ctx: &mut Rltk){
     }
 }
 
-//environment functions
-//find index of array for entire map
-pub fn xy_idx(x: i32, y:i32) -> usize{
-    //returns basic size usize 
-    //lacks semicolon means implied return statement
-    (y as usize * 80) + x as usize
-}
-
-//map constructor function
-fn new_map() -> Vec<TileType> {
-    //changeable variable map - vec! is a procedural macro that runs like a function, could write fn to add
-    let mut map = vec![TileType::Floor; 80 * 50];
-
-    //make boundaries walls
-    for x in 0..80 {
-        map[xy_idx(x,0)] = TileType::Wall;
-        map[xy_idx(x,49)] = TileType::Wall;
-    }
-    for y in 0..50 {
-        map[xy_idx(0,y)] = TileType::Wall;
-        map[xy_idx(79,y)] = TileType::Wall;
-    }
-
-    //randomly put walls in - wont be nice but its a start
-    let mut rng = rltk::RandomNumberGenerator::new();
-
-    //not looking for i so _i, just want it to run 400 times
-    for _i in 0..400 {
-        let x = rng.roll_dice(1,79);
-        let y = rng.roll_dice(1,49);
-        let idx = xy_idx(x,y);
-        if idx != xy_idx(40,25){
-            map[idx] = TileType::Wall;
-        }
-    }
-
-    map
-}
-    //[Tiletype] passes in slices 
-fn draw_map(map: &[TileType], ctx: &mut Rltk){
-    let mut y = 0;
-    let mut x = 0;
-    for tile in map.iter(){
-        //render tile depending on the type
-        match tile {
-            TileType::Floor => {
-                ctx.set(x,y,RGB::from_f32(0.5,0.5,0.5),RGB::from_f32(0.,0.,0.), rltk::to_cp437('.'));
-            }
-            TileType::Wall => {
-                ctx.set(x,y,RGB::from_f32(0.,1.0,0.), RGB::from_f32(0.,0.,0.), rltk::to_cp437('#'));
-            }
-        }
-
-        //move coordinates
-        x += 1;
-        if x > 79 {
-            x = 0;
-            y += 1;
-        }
-    }
-}
 
 
 //main
@@ -218,7 +107,6 @@ fn main() -> rltk::BError {
     //register components into created world - uses specs crate
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
-    gs.ecs.register::<LeftMover>();
     gs.ecs.register::<Player>();
 
 
