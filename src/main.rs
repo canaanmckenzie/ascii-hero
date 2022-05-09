@@ -13,7 +13,7 @@ struct State{
 
 //use specs derive macro to simplify component assignment
 #[derive(Component)]
-struct Position{
+struct Position {
     //2d 32 bit integers for x and y position
     x: i32,
     y: i32,
@@ -27,6 +27,9 @@ struct Renderable {
     fg: RGB,
     bg: RGB,
 }
+
+#[derive(Component)]
+struct LeftMover {}
 
 impl GameState for State{
     fn tick(&mut self, ctx: &mut Rltk){
@@ -59,12 +62,16 @@ fn main() -> rltk::BError {
     //register components into created world - uses specs crate
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
+    gs.ecs.register::<LeftMover>();
+
+
+    //entity creation
     gs.ecs//begin method chaining
         .create_entity()
         .with(Position{x:40, y:25})
         .with(Renderable{
             glyph: rltk::to_cp437('*'),
-            fg: RGB::named(rltk::YELLOW),
+            fg: RGB::named(rltk::PURPLE),
             bg: RGB::named(rltk::BLACK),
         })
         .build();
