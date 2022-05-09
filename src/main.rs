@@ -4,18 +4,19 @@ use specs::prelude::*;
 use std::cmp::{max,min};
 use specs_derive::Component;
 
-
-
+//modules
 mod map;
 pub use map::*;
 mod components;
 pub use components::*;
+mod rect;
+pub use rect::Rect;
+
 
 struct State{
     //ecs from spec crate
     ecs: World
 }
-
 
 //include system into state component to actually run logic
 impl State {
@@ -103,7 +104,7 @@ fn main() -> rltk::BError {
         ecs: World::new() //method in world that creates world but does not reference itself 
     };
 
-    gs.ecs.insert(new_map()); //add randomly generated map to world - using specs shared resources all ecs can use
+    gs.ecs.insert(new_map_rooms_and_corridors()); //add randomly generated map to world - using specs shared resources all ecs can use
     //register components into created world - uses specs crate
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
@@ -122,21 +123,6 @@ fn main() -> rltk::BError {
         .with(Player{})
         .build();
 
-    //add random entities
-    /*
-    for i in 0..10 {
-        gs.ecs
-            .create_entity()
-            .with(Position{x:i*7,y:20})
-            .with(Renderable{
-                glyph: rltk::to_cp437('@'),
-                fg: RGB::named(rltk::RED),
-                bg: RGB::named(rltk::BLACK),
-            })
-            .with(LeftMover{})
-            .build();
-    }
-    */
 rltk::main_loop(context,gs)
 }
     
