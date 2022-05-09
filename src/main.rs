@@ -31,9 +31,43 @@ struct Renderable {
 #[derive(Component)]
 struct LeftMover {}
 
+
+struct LeftWalker{} //empty structure to attach the system logic
+
+//first simple system to combine entity and components into a logical framework
+//implementing specs System trait for leftwalker structure
+// 'a mean that the components it is using must exist as long as system is running
+impl<'a> System <'a> for LeftWalker {
+    //type system data tells specs what the system requires
+    type SystemData = (ReadStorage<'a, LeftMover>, WriteStorage<'a,Position>);
+    //fn run is a trait implementation required by impl system from specs takes itself and systemdata
+    fn run(&mut self, (lefty, mut pos) : Self::SystemData){
+        //system shorthand for rendering, will run for each entity that has both components leftmover and position
+        for (_lefty,pos) in (&lefty, &mut pos).join() {
+            //underscore means component is not used but required to have one, lefty = leftmover component
+            pos.x -= 1;
+            if pos.x <0 {pos.x = 79;}
+        }
+    }
+}
+
+//include system into state component to actually run logic
+impl State {
+    fn run_systems(&mut self){
+        let mut lw = LeftWalker{}; //makes mutable instance of leftwalker system
+        lw.run_now(&self.ecs); //tells system to run and how to find the ecs
+        self.ecs.maintain(); //tells specs that if any changes were queued by sytem they should apply to world now
+    }
+}
+
+
 impl GameState for State{
     fn tick(&mut self, ctx: &mut Rltk){
         ctx.cls();
+
+        //call run systems for each tick in gamestate
+        self.run_systems();
+
         //ask read access to container used to store position/render components
         let positions = self.ecs.read_storage::<Position>();
         let renderables = self.ecs.read_storage::<Renderable>();
@@ -86,6 +120,7 @@ fn main() -> rltk::BError {
                 fg: RGB::named(rltk::RED),
                 bg: RGB::named(rltk::BLACK),
             })
+            .with(LeftMover{})
             .build();
     }
 
