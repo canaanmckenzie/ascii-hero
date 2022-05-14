@@ -11,7 +11,7 @@ impl Rect {
 		Rect{x1: x, x2: x+w, y1: y, y2: y+h}
 	}
 
-	//returns true if this rect overlaps another - member method
+	//returns true if this rect overlaps another 
 	pub fn intersect(&self, other: &Rect) -> bool {
 		self.x1 <= other.x2 && self.x2 >= other.x1 && self.y1 <= other.y2 && self.y2 >= other.y1
 	}

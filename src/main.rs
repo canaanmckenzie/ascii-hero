@@ -11,6 +11,8 @@ mod rect;
 pub use rect::Rect;
 mod player;
 pub use player::*;
+mod visibility_system;
+use visibility_system::VisibilitySystem;
 
 
 pub struct State{
@@ -21,6 +23,8 @@ pub struct State{
 //include system into state component to actually run logic
 impl State {
     fn run_systems(&mut self){
+        let mut vis = VisibilitySystem{};
+        vis.run_now(&self.ecs);
         self.ecs.maintain(); //tells specs that if any changes were queued by sytem they should apply to world now
     }
 }
@@ -70,6 +74,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
+    gs.ecs.register::<Viewshed>();
 
     let map: Map =  Map::new_map_rooms_and_corridors();
     let (player_x,player_y) = map.rooms[0].center();
@@ -85,6 +90,7 @@ fn main() -> rltk::BError {
             bg: RGB::named(rltk::BLACK),
         })
         .with(Player{})
+        .with(Viewshed{visible_tiles: Vec::new(), range: 8})
         .build();
 
 rltk::main_loop(context,gs)

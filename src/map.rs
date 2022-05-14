@@ -1,7 +1,6 @@
 use rltk::{RGB,Rltk,RandomNumberGenerator};
 use std::cmp::{max,min};
 use super::{Rect};
-use specs_derive::*;
 use specs::prelude::*;
 
 //map tiles using enumeration - derive features are built into rust
@@ -19,6 +18,8 @@ pub struct Map{
     pub height: i32
 }
 
+
+//implement a system for map structure for variabilty later
 impl Map {
     //environment functions
     //find index of array for entire map
@@ -38,7 +39,7 @@ impl Map {
         }
     }
 
-
+    //reference mutable map structure-system of Map as map
     fn apply_horizontal_tunnel(&mut self, x1:i32, x2:i32, y:i32){
         for x in min(x1,x2)..=max(x1,x2){
             let idx = self.xy_idx(x,y);
@@ -60,6 +61,7 @@ impl Map {
 
     pub fn new_map_rooms_and_corridors() -> Map {
 
+        //create a new map structure to reference and pass into environment
     let mut map = Map{
         tiles: vec![TileType::Wall; 80*50],
         rooms: Vec::new(),
@@ -103,8 +105,7 @@ impl Map {
     map
     }
 }
-
-
+    //pass in a world component from specs::prelude::*
   //[Tiletype] passes in slices 
 pub fn draw_map(ecs: &World, ctx: &mut Rltk){
     let map = ecs.fetch::<Map>();
