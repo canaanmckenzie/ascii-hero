@@ -129,10 +129,10 @@ pub fn draw_map(map: &[TileType], ctx: &mut Rltk){
         //render tile depending on the type
         match tile {
             TileType::Floor => {
-                ctx.set(x,y,RGB::from_f32(0.5,0.5,0.5),RGB::from_f32(0.,0.,0.), rltk::to_cp437('.'));
+                ctx.set(x,y,RGB::from_f32(0.5,0.5,0.5),RGB::from_f32(0.,0.,0.), rltk::to_cp437('▒'));
             }
             TileType::Wall => {
-                ctx.set(x,y,RGB::from_f32(0.,1.0,0.), RGB::from_f32(0.,0.,0.), rltk::to_cp437('#'));
+                ctx.set(x,y,RGB::from_f32(0.1,0.1,0.1), RGB::from_f32(0.,0.,0.), rltk::to_cp437('#'));
             }
         }
 
