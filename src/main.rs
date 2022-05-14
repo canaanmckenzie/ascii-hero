@@ -25,7 +25,8 @@ impl State {
     fn run_systems(&mut self){
         let mut vis = VisibilitySystem{};
         vis.run_now(&self.ecs);
-        self.ecs.maintain(); //tells specs that if any changes were queued by sytem they should apply to world now
+        self.ecs.maintain(); 
+        //tells specs that if any changes were queued by sytem they should apply to world now
     }
 }
 
@@ -66,10 +67,11 @@ fn main() -> rltk::BError {
     .build()?;
 
     let mut gs = State {
-        ecs: World::new() //method in world that creates world but does not reference itself 
+        ecs: World::new() 
+        //method in world that creates world but does not reference itself 
     };
 
-    //gs.ecs.insert(new_map_rooms_and_corridors()); //add randomly generated map to world - using specs shared resources all ecs can use
+    
     //register components into created world - uses specs crate
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
@@ -78,6 +80,19 @@ fn main() -> rltk::BError {
 
     let map: Map =  Map::new_map_rooms_and_corridors();
     let (player_x,player_y) = map.rooms[0].center();
+
+    for room in map.rooms.iter().skip(1){
+        let (x,y) = room.center();
+        gs.ecs.create_entity()
+            .with(Position{x,y})
+            .with(Renderable{
+                glyph: rltk::to_cp437('♥'),
+                fg: RGB::named(rltk::RED),
+                bg: RGB::named(rltk::BLACK),
+            })
+            .with(Viewshed{visible_tiles: Vec::new(), range: 8, dirty: true})
+            .build();
+    }
     gs.ecs.insert(map);
 
     //entity creation
@@ -85,13 +100,14 @@ fn main() -> rltk::BError {
         .create_entity()
         .with(Position{x: player_x, y: player_y})
         .with(Renderable{
-            glyph: rltk::to_cp437('*'),
+            glyph: rltk::to_cp437('☼'),
             fg: RGB::named(rltk::BLUE),
             bg: RGB::named(rltk::BLACK),
         })
         .with(Player{})
         .with(Viewshed{visible_tiles: Vec::new(), range: 8, dirty: true})
         .build();
+
 
 rltk::main_loop(context,gs)
 }
