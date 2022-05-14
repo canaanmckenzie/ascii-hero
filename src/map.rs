@@ -81,7 +81,6 @@ pub fn new_map_rooms_and_corridors() -> Vec<TileType>{
 }
 
 
-
 fn apply_room_to_map(room: &Rect, map: &mut [TileType]){
     for y in room.y1 + 1..= room.y2{
         for x in room.x1 + 1..= room.x2{
