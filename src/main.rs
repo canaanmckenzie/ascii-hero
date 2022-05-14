@@ -13,11 +13,20 @@ mod player;
 pub use player::*;
 mod visibility_system;
 use visibility_system::VisibilitySystem;
+mod monster_ai_system;
+use monster_ai_system::MonsterAI;
 
 
 pub struct State{
     //ecs from spec crate
-    ecs: World
+    pub ecs: World,
+    pub runstate: RunState
+}
+
+//for turn based in tick based game state - make enum
+#[derive(PartialEq,Copy,Clone)]
+pub enum RunState {
+    Paused, Running
 }
 
 //include system into state component to actually run logic
@@ -25,6 +34,8 @@ impl State {
     fn run_systems(&mut self){
         let mut vis = VisibilitySystem{};
         vis.run_now(&self.ecs);
+        let mut mob = MonsterAI{};
+        mob.run_now(&self.ecs);
         self.ecs.maintain(); 
         //tells specs that if any changes were queued by sytem they should apply to world now
     }
@@ -35,10 +46,16 @@ impl GameState for State{
     fn tick(&mut self, ctx: &mut Rltk){
         ctx.cls();
 
-        //call run systems for each tick in gamestate
-        self.run_systems();
+        //call run systems for each tick in gamestate - add runstate turn based logic
+        if self.runstate == RunState::Running{
 
-        player_input(self,ctx);
+            self.run_systems();
+            self.runstate =RunState::Paused; 
+
+        } else {
+
+            self.runstate = player_input(self,ctx);
+        }
 
         //fetch will crash if resource doesnt exist
         draw_map(&self.ecs,ctx);
@@ -73,7 +90,9 @@ fn main() -> rltk::BError {
     .build()?;
 
     let mut gs = State {
-        ecs: World::new() 
+        ecs: World::new(),
+        runstate: RunState::Running 
+
         //method in world that creates world but does not reference itself 
     };
 
@@ -82,6 +101,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
     gs.ecs.register::<Viewshed>();
+    gs.ecs.register::<Monster>();
 
     let map: Map =  Map::new_map_rooms_and_corridors();
     let (player_x,player_y) = map.rooms[0].center();
@@ -108,6 +128,7 @@ fn main() -> rltk::BError {
                 bg: RGB::named(rltk::BLACK),
             })
             .with(Viewshed{visible_tiles: Vec::new(), range: 8, dirty: true})
+            .with(Monster{})
             .build();
     }
     gs.ecs.insert(map);

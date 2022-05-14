@@ -27,13 +27,13 @@ pub fn try_move_player(delta_x:i32,delta_y:i32, ecs: &mut World){
 }
 
 //read keyboard provided by rltk
-pub fn player_input(gs: &mut State, ctx: &mut Rltk){
+pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     //player movement
     //context provides information about a key
     // match avoids need to unwrap because key stored as an option type
     match ctx.key { 
         //option types none or some provided by rust
-        None => {} //nothing happened
+        None => {return RunState::Paused} //nothing happened
         //key variable from ctx from Rltk is an enumeration - hold variable from predefined values
         Some(key) => match key {
             VirtualKeyCode::Left |
@@ -48,8 +48,9 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk){
             VirtualKeyCode::Down |
             VirtualKeyCode::Numpad2 |
             VirtualKeyCode::S => try_move_player(0,1, &mut gs.ecs),
-            _=> {} //anything else
+            _=> {return RunState::Paused} //anything else
         },
     }
+    RunState::Running
 }
 
