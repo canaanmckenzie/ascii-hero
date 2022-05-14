@@ -104,17 +104,20 @@ fn main() -> rltk::BError {
         ecs: World::new() //method in world that creates world but does not reference itself 
     };
 
-    gs.ecs.insert(new_map_rooms_and_corridors()); //add randomly generated map to world - using specs shared resources all ecs can use
+    //gs.ecs.insert(new_map_rooms_and_corridors()); //add randomly generated map to world - using specs shared resources all ecs can use
     //register components into created world - uses specs crate
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
 
+    let (rooms, map) =  new_map_rooms_and_corridors();
+    gs.ecs.insert(map);
+    let (player_x,player_y) = rooms[0].center();
 
     //entity creation
     gs.ecs//begin method chaining
         .create_entity()
-        .with(Position{x:40, y:25})
+        .with(Position{x: player_x, y: player_y})
         .with(Renderable{
             glyph: rltk::to_cp437('*'),
             fg: RGB::named(rltk::PURPLE),

@@ -50,7 +50,7 @@ pub fn new_map_test() -> Vec<TileType> {
     map
 }
 
-pub fn new_map_rooms_and_corridors() -> Vec<TileType>{
+pub fn new_map_rooms_and_corridors() -> (Vec<Rect>,Vec<TileType>){
 
     let mut map = vec![TileType::Wall; 80*50];
 
@@ -70,10 +70,9 @@ pub fn new_map_rooms_and_corridors() -> Vec<TileType>{
         let new_room = Rect::new(x,y,w,h);
         let mut ok = true;
         for other_room in rooms.iter() {
-            if new_room.intersect(other_room) {ok = false}
+            if new_room.intersect(other_room) {ok = false }
         } if ok {
             apply_room_to_map(&new_room, &mut map);
-            //rooms.push(new_room);
             if !rooms.is_empty() {
                 let (new_x, new_y) = new_room.center();
                 let (prev_x, prev_y) = rooms[rooms.len()-1].center();
@@ -90,7 +89,7 @@ pub fn new_map_rooms_and_corridors() -> Vec<TileType>{
         }
     }
 
-    map
+    (rooms, map)
 }
 
 
