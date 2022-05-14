@@ -36,8 +36,7 @@ impl GameState for State{
         player_input(self,ctx);
 
         //fetch will crash if resource doesnt exist
-        let map = self.ecs.fetch::<Vec<TileType>>();
-        draw_map(&map,ctx);
+        draw_map(&self.ecs,ctx);
 
         //ask read access to container used to store position/render components
         let positions = self.ecs.read_storage::<Position>();
@@ -72,9 +71,9 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
 
-    let (rooms, map) =  new_map_rooms_and_corridors();
+    let map: Map =  Map::new_map_rooms_and_corridors();
+    let (player_x,player_y) = map.rooms[0].center();
     gs.ecs.insert(map);
-    let (player_x,player_y) = rooms[0].center();
 
     //entity creation
     gs.ecs//begin method chaining
@@ -82,7 +81,7 @@ fn main() -> rltk::BError {
         .with(Position{x: player_x, y: player_y})
         .with(Renderable{
             glyph: rltk::to_cp437('*'),
-            fg: RGB::named(rltk::PURPLE),
+            fg: RGB::named(rltk::BLUE),
             bg: RGB::named(rltk::BLACK),
         })
         .with(Player{})
