@@ -1,4 +1,4 @@
-use rltk::{Rltk,VirtualKeyCode};
+use rltk::{Rltk,VirtualKeyCode, Point};
 use specs::prelude::*;
 use std::cmp::{min,max};
 use super::*;
@@ -13,6 +13,7 @@ pub fn try_move_player(delta_x:i32,delta_y:i32, ecs: &mut World){
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let map = ecs.fetch::<Map>();
 
+
     //join both entities so that only entities with both position and player components will be operated on
     for (_player,pos, viewshed) in (&mut players, &mut positions, &mut viewsheds).join() {
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y +delta_y);
@@ -20,6 +21,10 @@ pub fn try_move_player(delta_x:i32,delta_y:i32, ecs: &mut World){
         if map.tiles[destination_idx] != TileType::Wall {
             pos.x = min(79, max(0,pos.x + delta_x));
             pos.y = min(49, max(0, pos.y + delta_y));
+
+            let mut ppos = ecs.write_resource::<Point>();
+            ppos.x = pos.x;
+            ppos.y = pos.y;
 
             viewshed.dirty =  true;
         }

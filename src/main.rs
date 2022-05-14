@@ -1,5 +1,5 @@
 //import rltk library
-use rltk::{Rltk,GameState, RGB};
+use rltk::{Rltk,GameState, RGB, Point};
 use specs::prelude::*;
 
 //modules
@@ -145,7 +145,7 @@ fn main() -> rltk::BError {
         .with(Player{})
         .with(Viewshed{visible_tiles: Vec::new(), range: 8, dirty: true})
         .build();
-
+    gs.ecs.insert(Point::new(player_x,player_y));
 
 rltk::main_loop(context,gs)
 }
