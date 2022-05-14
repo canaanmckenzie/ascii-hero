@@ -46,13 +46,19 @@ impl GameState for State{
         //ask read access to container used to store position/render components
         let positions = self.ecs.read_storage::<Position>();
         let renderables = self.ecs.read_storage::<Renderable>();
+        let map = self.ecs.fetch::<Map>();
 
         //specs uses a database like join to find entities that have both position and renderable components
         //destructuring in rust, on result per entity that has both components
         //returns a tuple {} of entities with components pos and render .o and .1
         //entities with one or the other will not be included 
+
         for (pos, render) in (&positions, &renderables).join(){
-            ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+            let idx = map.xy_idx(pos.x,pos.y);
+            if map.visible_tiles[idx]{
+
+                ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+            }
         }
     }
 }
@@ -71,7 +77,6 @@ fn main() -> rltk::BError {
         //method in world that creates world but does not reference itself 
     };
 
-    
     //register components into created world - uses specs crate
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
@@ -81,12 +86,24 @@ fn main() -> rltk::BError {
     let map: Map =  Map::new_map_rooms_and_corridors();
     let (player_x,player_y) = map.rooms[0].center();
 
+    //monster spawner
+    let mut rng = rltk::RandomNumberGenerator::new();
     for room in map.rooms.iter().skip(1){
         let (x,y) = room.center();
+
+        let glyph: rltk::FontCharType;
+        let roll = rng.roll_dice(1,2);
+        match roll {
+            1 =>{glyph = rltk::to_cp437('g')}
+            _ =>{glyph = rltk::to_cp437('o')}
+        }
+
+        //entity
         gs.ecs.create_entity()
+        //components
             .with(Position{x,y})
             .with(Renderable{
-                glyph: rltk::to_cp437('♥'),
+                glyph: glyph,
                 fg: RGB::named(rltk::RED),
                 bg: RGB::named(rltk::BLACK),
             })
