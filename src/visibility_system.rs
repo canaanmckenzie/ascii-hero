@@ -24,7 +24,7 @@ impl <'a>System<'a> for VisibilitySystem {
 
 			//if entity is a player, reveal what they can see
 			let p: Option<&Player> = player.get(ent);
-			if let Some(p) = p {
+			if let Some(_p) = p {
 				for vis in viewshed.visible_tiles.iter() {
 					let idx = map.xy_idx(vis.x,vis.y);
 					map.revealed_tiles[idx] = true;

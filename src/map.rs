@@ -1,6 +1,6 @@
 use rltk::{RGB,Rltk,RandomNumberGenerator, BaseMap, Algorithm2D, Point};
 use std::cmp::{max,min};
-use super::{Rect,Viewshed, Player};
+use super::{Rect};
 use specs::prelude::*;
 
 //map tiles using enumeration - derive features are built into rust
