@@ -15,7 +15,8 @@ pub struct Map{
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rect>,
     pub width: i32,
-    pub height: i32
+    pub height: i32,
+    pub revealed_tiles: Vec<bool>
 }
 
 //2d system from rltk
@@ -82,7 +83,8 @@ impl Map {
         tiles: vec![TileType::Wall; 80*50],
         rooms: Vec::new(),
         width: 80,
-        height: 50
+        height: 50,
+        revealed_tiles: vec![false;80*50]
     };
 
     const MAX_ROOMS: i32 = 30;
@@ -124,18 +126,14 @@ impl Map {
     //pass in a world component from specs::prelude::*
   //[Tiletype] passes in slices 
 pub fn draw_map(ecs: &World, ctx: &mut Rltk){
-    let mut viewsheds = ecs.write_storage::<Viewshed>();
-    let mut players = ecs.write_storage::<Player>();
+
     let map = ecs.fetch::<Map>();
 
-    for (_player,viewshed) in (&mut players, &mut viewsheds).join(){
-        let mut y = 0;
-        let mut x = 0;
+    let mut y = 0;
+    let mut x = 0;
 
-        for tile in map.tiles.iter(){
-            //render tile depending on the type
-            let pt = Point::new(x,y);
-            if viewshed.visible_tiles.contains(&pt){
+    for (idx,tile) in map.tiles.iter().enumerate() {
+        if map.revealed_tiles[idx] {
                 match tile {
                     TileType::Floor => {
                         ctx.set(x,y,RGB::from_f32(0.5,0.5,0.5),RGB::from_f32(0.,0.,0.), rltk::to_cp437('▒'));
@@ -145,12 +143,11 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk){
                     }
                 }
             }
-            //move coordinates
-            x += 1;
-            if x > 79 {
-                x = 0;
-                y += 1;
-            }
+        //move coordinates
+        x += 1;
+        if x > 79 {
+            x = 0;
+            y += 1;
         }
-    }
+     }
 }
