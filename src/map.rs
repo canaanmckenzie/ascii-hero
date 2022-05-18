@@ -17,7 +17,8 @@ pub struct Map{
     pub width: i32,
     pub height: i32,
     pub revealed_tiles: Vec<bool>,
-    pub visible_tiles: Vec<bool>
+    pub visible_tiles: Vec<bool>,
+    pub blocked: Vec<bool>
 }
 
 //2d system from rltk
@@ -104,9 +105,16 @@ impl Map {
             return false;
         } 
         let idx = self.xy_idx(x,y);
-        self.tiles[idx as usize] != TileType::Wall
+        //self.tiles[idx as usize] != TileType::Wall
+        !self.blocked[idx] //bound checking prevents crashing reading outside map
     }
 
+    //populate blocked vector if a tile type is a wall
+    pub fn populate_blocked(&mut self){
+        for (i,tile) in self.tiles.iter_mut().enumerate(){
+            self.blocked[i] = *tile ==TileType::Wall;
+        }
+    }
 
     pub fn new_map_rooms_and_corridors() -> Map {
 
@@ -117,7 +125,8 @@ impl Map {
         width: 80,
         height: 50,
         revealed_tiles: vec![false;80*50],
-        visible_tiles: vec![false;80*50]
+        visible_tiles: vec![false;80*50],
+        blocked: vec![false;80*50]
     };
 
     const MAX_ROOMS: i32 = 30;
@@ -178,7 +187,7 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk){
                     }
                     TileType::Wall => {
                         glyph = rltk::to_cp437('#');
-                        fg = RGB::from_f32(0.0,0.3,0.0);
+                        fg = RGB::from_f32(0.0,0.5,0.5);
                         //ctx.set(x,y,RGB::from_f32(0.1,0.1,0.1), RGB::from_f32(0.,0.,0.), rltk::to_cp437('#'));
                     }
                 }
